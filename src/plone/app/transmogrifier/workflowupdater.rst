@@ -1,18 +1,18 @@
 Workflow updater section
-========================
+------------------------
 
-A workflow updater pipeline section is another important transmogrifier
-content import pipeline element. It executes workflow transitions on Plone
-content based on the items it processes. The workflow updater section
-blueprint name is ``plone.app.transmogrifier.workflowupdater``. Workflow updater
-sections operate on objects already present in the ZODB, be they created by a
-constructor or pre-existing objects.
+A workflow updater pipeline section is another important transmogrifier content
+import pipeline element. It executes workflow transitions on Plone content
+based on the items it processes. The workflow updater section blueprint name is
+``plone.app.transmogrifier.workflowupdater``. Workflow updater sections operate
+on objects already present in the ZODB, be they created by a constructor or
+pre-existing objects.
 
 Workflow updating needs 2 pieces of information: the path to the object, and
 what transitions to execute. To determine these, the workflow updater section
-inspects each item and looks for two keys, as described below. Any item
-missing any of these two pieces will be skipped. Similarly, items with a path
-that doesn't exist will be skipped as well.
+inspects each item and looks for two keys, as described below. Any item missing
+any of these two pieces will be skipped. Similarly, items with a path that
+doesn't exist will be skipped as well.
 
 For the object path, it'll look (in order) for
 ``_plone.app.transmogrifier.atschemaupdater_[sectionname]_path``,
@@ -32,8 +32,13 @@ as ``path-key``), defaulting to
 
 Unicode paths are encoded to ASCII. Paths to objects are always interpreted as
 relative to the context object. Transitions are specified as a sequence of
-transition names, or as a string specifying one transition. Transitions are
-executed in order, failing transitions are silently ignored.
+transition names, or as a string specifying one transition, or a list of
+dictionaries containing 'action' as transition id, 'review_state' as state id
+and 'time' as a DateTime representing the transition time (if so, the worflow
+history will be updated with the provided date). Transitions are executed in
+order, failing transitions are silently ignored.
+
+::
 
     >>> import pprint
     >>> workflow = """
@@ -72,7 +77,14 @@ executed in order, failing transitions are silently ignored.
         {'_path': '/spam/eggs/nosuchtransition',
        '_transitions': ('nonsuch',),
        'title': 'Should not be updated, no such transition'}
+    logger INFO
+        {'_path': '/spam/eggs/bla',
+       '_transitions': ({'action': 'spam',
+                         'review_state': 'spammed',
+                         'time': DateTime('2014/06/20 00:00:00 GMT+0')},)}
+
     >>> pprint.pprint(plone.updated)
     [('spam/eggs/foo', 'spam'),
      ('spam/eggs/baz', 'spam'),
-     ('spam/eggs/baz', 'eggs')]
+     ('spam/eggs/baz', 'eggs'),
+     ('spam/eggs/bla', 'spam')]
