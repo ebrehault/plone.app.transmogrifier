@@ -29,7 +29,15 @@ def get(field, obj):
 
 
 def set(field, obj, val):
-    field.getMutator(obj)(val)
+    try:
+        if getattr(field, 'getMutator', False):
+            field.getMutator(obj)(val)
+        elif field.mutator is not None:
+            getattr(obj, field.mutator)(val)
+        else:
+            field.set(obj, val)
+    except:
+        logger.info("ERROR while setting %s" % str(field))
 
 
 class ATSchemaUpdaterSection(object):
