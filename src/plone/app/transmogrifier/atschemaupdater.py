@@ -38,7 +38,7 @@ def get(field, obj):
 
 def set(field, obj, val):
     try:
-        if getattr(field, 'getMutator', False):
+        if getattr(field, 'getMutator', False) and field.getMutator(obj):
             field.getMutator(obj)(val)
         elif field.mutator is not None:
             getattr(obj, field.mutator)(val)
